@@ -54,4 +54,42 @@ eth0：10.20.0.12/24
 
 ## 2. GoBGP 如何解除二层限制
 
+假设服务器分别位于不同网段：
+
+```bash
+机架 A：
+  Server A：192.168.10.11
+  ToR-A：  192.168.10.1
+
+机架 B：
+  Server B：192.168.20.11
+  ToR-B：  192.168.20.1
+
+业务 VIP：
+  10.20.0.100/32
+```
+两台服务器分别向本机架的 ToR 宣告同一个 VIP：
+
+```bash
+Server A → ToR-A：10.20.0.100/32 经由 Server A
+Server B → ToR-B：10.20.0.100/32 经由 Server B
+```
+```mermaid
+flowchart TB
+    Client["客户端"]
+    Spine["Spine<br/>学习到两条 VIP /32 路由"]
+    TorA["ToR-A<br/>机架A"]
+    TorB["ToR-B<br/>机架B"]
+    A["Server A<br/>192.168.10.11<br/>宣告 10.20.0.100/32"]
+    B["Server B<br/>192.168.20.11<br/>宣告 10.20.0.100/32"]
+
+    Client --> Spine
+    Spine -->|"ECMP 路径 1"| TorA
+    Spine -->|"ECMP 路径 2"| TorB
+    TorA --> A
+    TorB --> B
+```
+
+
+
 
