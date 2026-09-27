@@ -41,4 +41,69 @@ VIP：           10.20.0.100/32
 # ip addr show dev lo
 # ip route show table local
 ```
+应该看到类似:
+
+```bash
+local 10.20.0.100 dev lo proto kernel scope host
+```
+`local路由`表示目的地址属于本机，数据包会被交给本地协议栈，而不是继续转发。
+> 参看 [Linux ip-route 文档](https://man7.org/linux/man-pages/man8/ip-route.8.html)
+
+这里不需要打开:
+
+```bash
+net.ipv4.ip_forward
+```
+因为数据包的目的地址是本机 VIP，不是让服务器充当普通路由器。
+
+### 2.2 让应用监听 VIP
+
+- 应用可以只监听 VIP
+
+  ```bash
+  10.20.0.100:443
+  ```
+  例如`Nginx`:
+  
+  ```bash
+  server {
+      listen 10.20.0.100:443 ssl;
+      server_name _;
+  }
+  ```
+  检查监听情况应该可以看到:
+
+  ```bash
+  # ss -lntp
+  LISTEN 0 511 10.20.0.100:443
+  ```
+
+
+- 也可以监听所有本地地址
+
+  ```bash
+  0.0.0.0:443
+  ```
+   检查监听情况应该可以看到:
+
+  ```bash
+  # ss -lntp
+  LISTEN 0 511 0.0.0.0:443
+  ```
+
+先在服务器本机测试：
+
+```bash
+# curl -k https://10.20.0.100/
+```
+如果本机都不能访问，先不要发布 BGP 路由。
+
+## 2.2 通过 GoBGP 发布 VIP
+
+如果服务器与 ToR 建立的是直连 eBGP，通常可以直接添加：
+
+```bash
+gobgp global rib add 10.20.0.100/32
+```
+
 
