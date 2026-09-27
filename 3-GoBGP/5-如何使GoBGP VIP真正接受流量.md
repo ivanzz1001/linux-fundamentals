@@ -27,3 +27,18 @@ VIP：           10.20.0.100/32
   → Linux 发现 10.20.0.100 是本地地址
   → 投递给监听 10.20.0.100:443 的应用
 ```
+
+## 2. 方式1-把 VIP 配置到 Loopback（推荐）
+
+### 2.1 添加VIP
+
+```bash
+# sudo ip addr add 10.20.0.100/32 dev lo
+```
+
+检查：
+```bash
+# ip addr show dev lo
+# ip route show table local
+```
+
